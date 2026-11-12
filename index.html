@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Закреп Замка</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="data.js"></script>
+<style>
+  :root{
+    --bg:#090b1a; --bg2:#11122a; --card:rgba(255,255,255,.045); --card-h:rgba(255,255,255,.08);
+    --line:rgba(240,196,110,.18); --gold:#f0c46e; --gold2:#ffe2a0; --text:#ece6f5; --muted:#9d96b8;
+    --red:#d9465a; --r:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+  body{min-height:100vh;background:
+    radial-gradient(120% 60% at 50% 0%, #1d1840 0%, transparent 60%),
+    radial-gradient(80% 50% at 100% 100%, #2a1530 0%, transparent 60%), var(--bg);
+    background-attachment:fixed}
+  .serif{font-family:Georgia,"Times New Roman",serif}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  .wrap{max-width:560px;margin:0 auto;padding:0 14px calc(28px + env(safe-area-inset-bottom))}
+
+  /* hero */
+  .hero{position:relative;margin:0 -14px;aspect-ratio:16/9;overflow:hidden}
+  .hero video,.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;
+    background:linear-gradient(transparent,var(--bg))}
+  .hero.small{aspect-ratio:auto;height:96px}
+  .hero.small video{object-position:50% 0%}
+
+  /* search */
+  .search{position:sticky;top:0;z-index:5;padding:10px 0;margin-top:-26px;
+    background:linear-gradient(var(--bg) 70%,transparent)}
+  .search label{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;
+    background:rgba(20,20,44,.9);border:1px solid var(--line);backdrop-filter:blur(10px)}
+  .search input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:inherit}
+  .search input::placeholder{color:var(--muted)}
+  .search svg{flex:none;opacity:.7}
+  .clear{color:var(--muted);font-size:18px;line-height:1;padding:0 2px}
+
+  h2.sec{font-family:Georgia,serif;font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold);margin:22px 4px 10px;display:flex;align-items:center;gap:10px}
+  h2.sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+  /* big menu cards */
+  .menu{display:grid;gap:10px}
+  .mcard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px;border-radius:var(--r);
+    background:var(--card);border:1px solid var(--line);transition:background .15s,transform .1s}
+  .mcard:active{transform:scale(.985);background:var(--card-h)}
+  .mcard .ic{flex:none;width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:22px;
+    background:linear-gradient(145deg,rgba(240,196,110,.22),rgba(240,196,110,.05));border:1px solid var(--line)}
+  .mcard b{display:block;font-family:Georgia,serif;font-size:17px;color:var(--gold2);font-weight:700}
+  .mcard small{display:block;color:var(--muted);margin-top:2px;font-size:13px}
+  .mcard .arr{margin-left:auto;color:var(--gold);opacity:.7;font-size:20px}
+
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .chip{padding:12px;border-radius:14px;background:var(--card);border:1px solid rgba(255,255,255,.06);text-align:left}
+  .chip:active{background:var(--card-h)}
+  .chip b{display:block;font-size:14px}
+  .chip span{color:var(--muted);font-size:12px}
+
+  /* list */
+  .list{border-radius:var(--r);overflow:hidden;border:1px solid rgba(255,255,255,.06);background:var(--card)}
+  .item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;
+    border-bottom:1px solid rgba(255,255,255,.05)}
+  .item:last-child{border-bottom:0}
+  .item:active{background:var(--card-h)}
+  .item .n{flex:none;width:26px;color:var(--gold);opacity:.65;font-size:12px;font-variant-numeric:tabular-nums;text-align:right}
+  .item .t{flex:1;min-width:0}
+  .item .t b{display:block;font-weight:600;font-size:15px}
+  .item .t span{color:var(--muted);font-size:12px}
+  .item .go{color:var(--muted);font-size:16px}
+  mark{background:rgba(240,196,110,.28);color:var(--gold2);border-radius:3px;padding:0 1px}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:4px -14px 0;padding:0 14px 2px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:none;padding:8px 14px;border-radius:999px;font-size:14px;border:1px solid rgba(255,255,255,.08);
+    background:var(--card);color:var(--muted);white-space:nowrap}
+  .tab.on{color:#1a1206;background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:transparent;font-weight:600}
+  .tab i{font-style:normal;opacity:.65;font-size:12px;margin-left:4px}
+
+  .bar{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 10px;color:var(--muted);font-size:13px}
+  .sort{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:var(--card);
+    border:1px solid rgba(255,255,255,.06);color:var(--text);font-size:13px}
+
+  .page-title{font-family:Georgia,serif;font-size:26px;color:var(--gold2);margin:4px 2px 2px}
+  .page-sub{color:var(--muted);margin:0 2px 6px;font-size:14px}
+
+  .note{display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin-top:10px;padding:12px 14px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(217,70,90,.18),rgba(217,70,90,.05));border:1px solid rgba(217,70,90,.35)}
+  .note b{display:block;font-size:14px}
+  .note span{color:var(--muted);font-size:12px}
+
+  .letter{padding:18px 16px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);font-size:15px}
+  .letter p{margin:0 0 10px}
+  .letter .big{font-family:Georgia,serif;font-size:20px;color:var(--gold2);line-height:1.3}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:14px;
+    font-weight:700;color:#1a1206;background:linear-gradient(180deg,var(--gold2),var(--gold));margin-top:14px;
+    box-shadow:0 6px 24px rgba(240,196,110,.25)}
+  .btn:active{transform:scale(.985)}
+  .warn{color:#ffb4bf;font-size:12px}
+
+  .empty{text-align:center;color:var(--muted);padding:30px 10px}
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;opacity:.7}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--gold);font-size:14px;margin:12px 2px 6px}
+  .in-tg .back{display:none}
+  .fade{animation:fade .22s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const tg = window.Telegram && Telegram.WebApp && Telegram.WebApp.initData !== undefined ? Telegram.WebApp : null;
+const inTG = !!(tg && tg.platform && tg.platform !== 'unknown');
+if (inTG) {
+  document.body.classList.add('in-tg');
+  tg.ready(); tg.expand();
+  try { tg.setHeaderColor('#090b1a'); tg.setBackgroundColor('#090b1a'); tg.setBottomBarColor && tg.setBottomBarColor('#090b1a'); } catch(e){}
+}
+
+/* ---------- контент ---------- */
+const NEWBIE = {
+  links: [
+    {t:'Вступить в Сердце Замка', s:'наш закрытый чат', u:'https://t.me/+s6WzjR7yBCk0YTJi', ic:'❤️‍🔥', main:true},
+    {t:'Правила Замка', s:'обязательно к прочтению', u:'https://t.me/c/2212790688/1212', ic:'📜'},
+    {t:'Правила Замка. Часть 2', s:'правила в Сердце Замка', u:'https://t.me/c/2217062060/1/10311', ic:'📜'},
+    {t:'Правила взаимодействия в Сердце Замка', s:'статья · изучи, отлететь в бан очень легко', u:'https://telegra.ph/Pravila-vzaimodejstviya-v-Serdce-Zamka-09-15-2', ic:'⚠️'},
+    {t:'Самый первый пост', s:'с чего всё началось', u:'https://t.me/c/2212790688/8', ic:'🕯️'},
+  ]
+};
+const LIB = window.LIBRARY || [];
+const TAB_ICONS = {efiry:'🎙️', podcasts:'🎧', texts:'📖', closed:'🔐'};
+const LOOKS_RE = /лукс|внешн|роста|пенис|член|прыщ|отек|отёк|голову яйцами/i;
+
+/* ---------- утилиты ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => s.toLowerCase().replace(/ё/g,'е');
+const haptic = (k='light') => { try { inTG && tg.HapticFeedback.impactOccurred(k); } catch(e){} };
+const fmtCount = n => n + ' ' + (n%10==1&&n%100!=11 ? 'материал' : (n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)) ? 'материала' : 'материалов');
+
+function openLink(u){
+  haptic();
+  if (inTG) {
+    if (/^https:\/\/t\.me\//.test(u)) tg.openTelegramLink(u); else tg.openLink(u);
+  } else window.open(u, '_blank');
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-u]'); if (a) { openLink(a.dataset.u); return; }
+  const r = e.target.closest('[data-r]'); if (r) { haptic(); go(r.dataset.r); }
+});
+
+const ALL = [];
+LIB.forEach(tab => tab.groups.forEach(g => g.items.forEach(it => ALL.push({...it, tab:tab.name, tabKey:tab.key, group:g.title}))));
+NEWBIE.links.forEach(l => ALL.push({t:l.t, u:l.u, tab:'Новоприбывшему', d:''}));
+
+/* ---------- роутинг ---------- */
+let state = { q:'', sort: localStorage.getItem('sort') || 'toc' };
+function go(r){ location.hash = r; }
+window.addEventListener('hashchange', render);
+
+function hero(small){
+  return `<div class="hero ${small?'small':''}">
+    <video src="hero.mp4" poster="hero.jpg" autoplay muted loop playsinline></video></div>`;
+}
+function backLink(){ return `<button class="back" data-r="/">‹ к оглавлению</button>`; }
+
+function itemRow(it, i, q){
+  let t = esc(it.t);
+  if (q) { const k = norm(it.t).indexOf(q); if (k >= 0) t = esc(it.t.slice(0,k)) + '<mark>' + esc(it.t.slice(k, k+q.length)) + '</mark>' + esc(it.t.slice(k+q.length)); }
+  const sub = [it.d, q ? it.tab + (it.group ? ' · ' + it.group : '') : ''].filter(Boolean).join(' · ');
+  return `<button class="item" data-u="${esc(it.u)}">
+    ${i != null ? `<span class="n">${i}</span>` : ''}
+    <span class="t"><b>${t}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</span><span class="go">›</span></button>`;
+}
+
+/* ---------- экраны ---------- */
+function home(){
+  const latest = ALL.filter(x => x.iso).sort((a,b) => b.iso.localeCompare(a.iso)).slice(0,4);
+  const total = LIB.reduce((s,t) => s + t.groups.reduce((a,g) => a + g.items.length, 0), 0);
+  return `${hero(false)}
+  ${searchBox()}
+  <div id="results"></div>
+  <div id="homeBody">
+    <h2 class="sec">Оглавление</h2>
+    <div class="menu">
+      <button class="mcard" data-r="/new"><span class="ic">🗝️</span><span><b>Новоприбывшему</b><small>Сердце Замка, правила, первый пост</small></span><span class="arr">›</span></button>
+      <button class="mcard" data-r="/lib/efiry"><span class="ic">📚</span><span><b>Библиотека</b><small>${fmtCount(total)}: эфиры, подкасты, тексты</small></span><span class="arr">›</span></button>
+      <button class="mcard" data-r="/looks"><span class="ic">🗿</span><span><b>Осознанный Луксмаксинг</b><small>закрытое пространство по внешности</small></span><span class="arr">›</span></button>
+    </div>
+
+    <h2 class="sec">Разделы библиотеки</h2>
+    <div class="chips">
+      ${LIB.map(t => `<button class="chip" data-r="/lib/${t.key}"><b>${TAB_ICONS[t.key]||''} ${esc(t.name)}</b><span>${fmtCount(t.groups.reduce((a,g)=>a+g.items.length,0))}</span></button>`).join('')}
+    </div>
+
+    <h2 class="sec">Свежее</h2>
+    <div class="list">${latest.map(it => itemRow({...it, d: it.d + ' · ' + it.tab})).join('')}</div>
+    <div class="foot serif">Егор Строит Замок 🏰</div>
+  </div>`;
+}
+
+function searchBox(){
+  return `<div class="search"><label>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f0c46e" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Поиск по всем материалам" value="${esc(state.q)}" autocomplete="off">
+    <button class="clear" id="qc" ${state.q ? '' : 'hidden'}>×</button></label></div>`;
+}
+function bindSearch(){
+  const inp = $('#q'); if (!inp) return;
+  const upd = () => {
+    state.q = inp.value; $('#qc').hidden = !state.q;
+    const q = norm(state.q.trim()), res = $('#results'), body = $('#homeBody');
+    if (!q) { res.innerHTML = ''; body.hidden = false; return; }
+    body.hidden = true;
+    const found = ALL.filter(x => norm(x.t).includes(q));
+    res.innerHTML = found.length
+      ? `<h2 class="sec">Найдено: ${found.length}</h2><div class="list">${found.map(x => itemRow(x, null, q)).join('')}</div>`
+      : `<div class="empty">Ничего не нашлось 🕯️<br><small>попробуй другое слово</small></div>`;
+  };
+  inp.addEventListener('input', upd);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+  $('#qc').addEventListener('click', e => { e.preventDefault(); inp.value=''; upd(); inp.focus(); });
+  if (state.q) upd();
+}
+
+function newbie(){
+  const [main, ...rest] = NEWBIE.links;
+  return `${hero(true)}${backLink()}
+  <h1 class="page-title">Новоприбывшему</h1>
+  <div class="letter fade">
+    <p class="big">Вот ты и совершил первый великий шаг…</p>
+    <p>Я так рад видеть тебя здесь, с нами :)</p>
+    <p style="margin:0">Обязательно вступи к нам в <b style="color:var(--gold2)">Сердце Замка</b>.</p>
+    <button class="btn" data-u="${main.u}">${main.ic} ${esc(main.t)}</button>
+  </div>
+  <h2 class="sec">Правила и начало</h2>
+  <div class="list fade">${rest.map(l => `<button class="item" data-u="${esc(l.u)}"><span class="n" style="font-size:18px;opacity:1">${l.ic}</span>
+    <span class="t"><b>${esc(l.t)}</b><span>${esc(l.s)}</span></span><span class="go">›</span></button>`).join('')}</div>
+  <p class="warn" style="margin:10px 4px">Правила изучи обязательно: отлететь в бан очень легко.</p>`;
+}
+
+function sortItems(items){
+  if (state.sort === 'toc') return items;
+  const s = [...items].sort((a,b) => a.iso.localeCompare(b.iso));
+  return state.sort === 'new' ? s.reverse() : s;
+}
+const SORTS = {toc:'как в оглавлении', new:'сначала новые', old:'сначала старые'};
+
+function library(key){
+  const tab = LIB.find(t => t.key === key) || LIB[0];
+  const count = tab.groups.reduce((a,g) => a + g.items.length, 0);
+  let n = 0;
+  return `${hero(true)}${backLink()}
+  <h1 class="page-title">Библиотека</h1>
+  ${tab.caption ? `<p class="page-sub">${esc(tab.caption.replace(/^\(|\)$/g,''))}</p>` : ''}
+  <div class="tabs">${LIB.map(t => `<button class="tab ${t.key===tab.key?'on':''}" data-r="/lib/${t.key}">${TAB_ICONS[t.key]||''} ${esc(t.name)}<i>${t.groups.reduce((a,g)=>a+g.items.length,0)}</i></button>`).join('')}</div>
+  ${tab.note ? `<button class="note" data-u="${esc(tab.note.url)}"><span style="font-size:22px">📼</span><span><b>Записи эфиров с Twitch</b><span>не опубликованные в Замке</span></span><span class="go" style="margin-left:auto">›</span></button>` : ''}
+  <div class="bar"><span>${fmtCount(count)}</span><button class="sort" id="sortBtn">⇅ ${SORTS[state.sort]}</button></div>
+  <div class="fade">${tab.groups.map(g => `${g.title ? `<h2 class="sec">${esc(g.title)}</h2>` : ''}
+    <div class="list">${sortItems(g.items).map(it => itemRow(it, ++n)).join('')}</div>`).join('')}</div>`;
+}
+
+function looks(){
+  const items = ALL.filter(x => x.iso && LOOKS_RE.test(x.t));
+  const pts = [
+    'Абсолютно эксклюзивный контент, которого нет в бесплатном доступе',
+    'Весь мой двухлетний опыт: ошибки, наблюдения и лучшие находки',
+    'Только эффективные, безопасные и проверенные способы улучшения внешности',
+    'Пошаговая система, которая помогает получать результат без бесконечных экспериментов над собой',
+    'Самое сильное и адекватное комьюнити по улучшению внешности: осознанные, добрые и амбициозные люди, которые поддерживают друг друга',
+    'Подход к луксмаксингу без токсичности, зависти, фанатизма и саморазрушения',
+    'Максимум результата при минимуме потраченного времени',
+    'Практические знания, которые раскроют потенциал внешности настолько, насколько это возможно без крайностей',
+  ];
+  return `${hero(true)}${backLink()}
+  <h1 class="page-title">Осознанный Луксмаксинг</h1>
+  <p class="page-sub">Закрытое пространство для тех, кто хочет реализовать максимальный потенциал своей внешности</p>
+  <div class="letter fade">
+    <p>Здесь собраны все знания, инструменты и система действий, которые помогут получить максимум результата без неврозов, опасных экспериментов и фанатичной погони за воображаемым идеалом.</p>
+    <p style="margin:0"><b style="color:var(--gold2)">И самое главное — эти знания подойдут всем, вне зависимости от пола и возраста.</b></p>
+    <button class="btn" data-u="https://t.me/egor_looksmax_bot">✨ Вступить</button>
+  </div>
+
+  <h2 class="sec">Что внутри</h2>
+  <div class="list fade">${pts.map(p => `<div class="item"><span class="n" style="opacity:1">◆</span><span class="t"><b style="font-weight:500">${esc(p)}</b></span></div>`).join('')}</div>
+  <p class="page-sub serif" style="margin:10px 4px;font-style:italic">p.s. такой концентрации материалов по луксмаксингу нет нигде, даже в Замке</p>
+
+  <h2 class="sec">Мой подход</h2>
+  <div class="letter fade">
+    <p>Через мои разборы прошло уже более <b style="color:var(--gold2)">1000 человек</b>, и я заметил закономерность: <i>большинство людей топчутся на месте не из-за генетики, а из-за неправильного подхода к луксмаксингу.</i></p>
+    <p>Они приходят в луксмаксинг, чтобы стать увереннее. А потом начинают искать в себе новые недостатки быстрее, чем успевают исправлять старые. Годы уходят на бесконечные эксперименты и погоню за идеалом, который постоянно отдаляется.</p>
+    <p>С правильной системой луксмаксинг не становится ещё одной работой, изматывающей тебя целый день. Он постепенно встраивается в жизнь и даёт результат практически на пассиве.</p>
+    <p class="big" style="margin:14px 0 0">Луксмаксинг должен работать на тебя, а не ты на луксмаксинг.</p>
+    <button class="btn" data-u="https://t.me/egor_looksmax_bot">Вступить · @egor_looksmax_bot</button>
+    <button style="display:block;width:100%;text-align:center;color:var(--gold);font-size:14px;margin-top:12px" data-u="https://t.me/son_godd/3951">открыть пост в канале ›</button>
+  </div>
+
+  <h2 class="sec">Бесплатно в Замке</h2>
+  <div class="list fade">${items.map((it,i) => itemRow({...it, d: it.d + ' · ' + it.tab}, i+1)).join('')}</div>`;
+}
+
+/* ---------- рендер ---------- */
+function render(){
+  const r = (location.hash.replace(/^#/, '') || '/');
+  let html;
+  if (r === '/new') html = newbie();
+  else if (r.startsWith('/lib')) html = library(r.split('/')[2]);
+  else if (r === '/looks') html = looks();
+  else html = home();
+  $('#app').innerHTML = html;
+  window.scrollTo(0, 0);
+  if (r === '/' ) bindSearch();
+  const sb = $('#sortBtn');
+  if (sb) sb.onclick = () => { const k = Object.keys(SORTS); state.sort = k[(k.indexOf(state.sort)+1) % k.length]; localStorage.setItem('sort', state.sort); haptic(); render(); };
+  if (inTG) { r === '/' ? tg.BackButton.hide() : tg.BackButton.show(); }
+}
+if (inTG) tg.BackButton.onClick(() => { haptic(); go('/'); });
+render();
+</script>
+</body>
+</html>
