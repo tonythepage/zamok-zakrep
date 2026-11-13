@@ -136,7 +136,6 @@ const NEWBIE = {
 };
 const LIB = window.LIBRARY || [];
 const TAB_ICONS = {efiry:'🎙️', podcasts:'🎧', texts:'📖', closed:'🔐'};
-const LOOKS_RE = /лукс|внешн|роста|пенис|член|прыщ|отек|отёк|голову яйцами/i;
 
 /* ---------- утилиты ---------- */
 const $ = s => document.querySelector(s);
@@ -268,7 +267,6 @@ function library(key){
 }
 
 function looks(){
-  const items = ALL.filter(x => x.iso && LOOKS_RE.test(x.t));
   const pts = [
     'Абсолютно эксклюзивный контент, которого нет в бесплатном доступе',
     'Весь мой двухлетний опыт: ошибки, наблюдения и лучшие находки',
@@ -300,10 +298,7 @@ function looks(){
     <p class="big" style="margin:14px 0 0">Луксмаксинг должен работать на тебя, а не ты на луксмаксинг.</p>
     <button class="btn" data-u="https://t.me/egor_looksmax_bot">Вступить · @egor_looksmax_bot</button>
     <button style="display:block;width:100%;text-align:center;color:var(--gold);font-size:14px;margin-top:12px" data-u="https://t.me/son_godd/3951">открыть пост в канале ›</button>
-  </div>
-
-  <h2 class="sec">Бесплатно в Замке</h2>
-  <div class="list fade">${items.map((it,i) => itemRow({...it, d: it.d + ' · ' + it.tab}, i+1)).join('')}</div>`;
+  </div>`;
 }
 
 /* ---------- рендер ---------- */
