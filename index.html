@@ -24,15 +24,18 @@
   .wrap{max-width:560px;margin:0 auto;padding:0 14px calc(28px + env(safe-area-inset-bottom))}
 
   /* hero */
-  .hero{position:relative;margin:0 -14px;aspect-ratio:16/9;overflow:hidden}
-  .hero video,.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .hero::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;
+  :root{--ti:0px}
+  body.fs{--ti:calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px))}
+  .hero{margin:0 -14px;padding-top:var(--ti);background:#070918}
+  .pic{position:relative;aspect-ratio:16/9;overflow:hidden}
+  .pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .pic::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;
     background:linear-gradient(transparent,var(--bg))}
-  .hero.small{aspect-ratio:auto;height:96px}
-  .hero.small video{object-position:50% 0%}
+  .hero.small .pic{aspect-ratio:auto;height:96px}
+  .hero.small img{object-position:50% 0%}
 
   /* search */
-  .search{position:sticky;top:0;z-index:5;padding:10px 0;margin-top:-26px;
+  .search{position:sticky;top:var(--ti);z-index:5;padding:10px 0;margin-top:-26px;
     background:linear-gradient(var(--bg) 70%,transparent)}
   .search label{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;
     background:rgba(20,20,44,.9);border:1px solid var(--line);backdrop-filter:blur(10px)}
@@ -121,6 +124,12 @@ const inTG = !!(tg && tg.platform && tg.platform !== 'unknown');
 if (inTG) {
   document.body.classList.add('in-tg');
   tg.ready(); tg.expand();
+  const syncFs = () => document.body.classList.toggle('fs', !!tg.isFullscreen);
+  try {
+    tg.onEvent('fullscreenChanged', syncFs);
+    if (tg.isVersionAtLeast('8.0') && ['ios','android'].includes(tg.platform)) tg.requestFullscreen();
+  } catch(e){}
+  syncFs();
   try { tg.setHeaderColor('#090b1a'); tg.setBackgroundColor('#090b1a'); tg.setBottomBarColor && tg.setBottomBarColor('#090b1a'); } catch(e){}
 }
 
@@ -166,7 +175,7 @@ window.addEventListener('hashchange', render);
 
 function hero(small){
   return `<div class="hero ${small?'small':''}">
-    <video src="hero.mp4" poster="hero.jpg" autoplay muted loop playsinline></video></div>`;
+    <div class="pic"><img src="hero.jpg" alt="Закреп Замка"></div></div>`;
 }
 function backLink(){ return `<button class="back" data-r="/">‹ к оглавлению</button>`; }
 
